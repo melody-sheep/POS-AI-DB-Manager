@@ -2,12 +2,21 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\Auth\SelectRoleController;
 
 Route::get('/', function () {
+    if (auth()->check()) {
+        return redirect()->route('dashboard');
+    }
     return redirect()->route('login');
 });
 
-// Dashboard route - MUST be defined
+// Role selection route (must be before auth routes)
+Route::get('/select-role', [SelectRoleController::class, 'create'])
+    ->name('select-role')
+    ->middleware('guest');
+
+// Dashboard route
 Route::get('/dashboard', function () {
     return view('dashboard');
 })->middleware(['auth', 'verified'])->name('dashboard');
@@ -36,6 +45,23 @@ Route::get('/test-db', function () {
             'error' => $e->getMessage(),
         ], 500);
     }
+});
+
+// Temporary logout route for testing
+Route::get('/get-logout', function() {
+    \Auth::logout();
+    \Session::flush();
+    return redirect('/login');
+});
+
+// Add this right before require __DIR__.'/auth.php';
+Route::get('/test-design', function() {
+    return view('test-design');
+});
+
+
+Route::get('/test-login-page', function() {
+    return view('test-login');
 });
 
 // This line loads all auth routes (login, register, etc.)
