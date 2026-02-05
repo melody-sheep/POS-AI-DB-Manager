@@ -1,4 +1,3 @@
-
 @import 'tailwindcss';
 
 /* Cashier specific styles */
@@ -36,4 +35,46 @@
     margin-top: 40px;
     margin-left: auto;
     margin-right: auto;
+}
+
+/* Custom styles for navigation icons */
+.notification-bell {
+    color: #484545;
+}
+
+.profile-icon-circle {
+    transition: all 0.2s ease-in-out;
+}
+
+.profile-icon-circle:hover {
+    background-color: #f3f4f6;
+    border-color: #9ca3af;
+}
+
+/* Notification dropdown styles */
+.notification-item {
+    transition: background-color 0.2s ease;
+}
+
+.notification-item:hover {
+    background-color: #f9fafb;
+}
+
+/* Custom scrollbar for notification dropdown */
+.notification-scroll::-webkit-scrollbar {
+    width: 6px;
+}
+
+.notification-scroll::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 3px;
+}
+
+.notification-scroll::-webkit-scrollbar-thumb {
+    background: #c1c1c1;
+    border-radius: 3px;
+}
+
+.notification-scroll::-webkit-scrollbar-thumb:hover {
+    background: #a1a1a1;
 }
