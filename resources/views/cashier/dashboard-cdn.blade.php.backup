@@ -499,7 +499,7 @@
                         
                         <!-- Add Product Button -->
                         <button 
-                            @click="$dispatch('open-modal', 'add-product-modal')"
+                            @click="showProductModal = true"
                             class="add-product-btn"
                         >
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -538,7 +538,7 @@
     </div>
 
     <!-- Include Product Modal Partial -->
-    @include('cashier.partials._add-product-modal')
+    @include('cashier.partials._product-modal')
 
     <!-- Local JavaScript -->
     <script src="{{ asset('js/cashier/dashboard.js') }}"></script>

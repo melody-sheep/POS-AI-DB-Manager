@@ -10,7 +10,7 @@ pos-ai-powerered/ 📁 - Project root
 ├── phpunit.xml 🧪 - PHPUnit config
 ├── project_structure.txt 📄 - Project structure
 ├── README.md 📖 - Readme file
-├── test-connection.php 🔗 - DB test script
+├── test-connection.php 🔍 - DB test script
 ├── vite.config.js ⚡ - Vite config
 ├── postcss.config.js ⚙️ - PostCSS config
 ├── tailwind.config.js 🎨 - Tailwind config
@@ -32,14 +32,14 @@ pos-ai-powerered/ 📁 - Project root
 │   │   │   │   ├── RegisteredUserController.php 👤
 │   │   │   │   ├── SelectRoleController.php 👤
 │   │   │   │   └── VerifyEmailController.php 📧
-│   │   │   └── Cashier/ 💰 - Cashier controllers (NEW)
+│   │   │   └── Cashier/ 💰 - Cashier controllers
 │   │   │       └── ProductController.php 🎮 - Product operations
 │   │   │
 │   │   └── Requests/ 📝 - Request classes
 │   │       ├── ProfileUpdateRequest.php 👤
 │   │       ├── Auth/ 🔐
 │   │       │   └── LoginRequest.php 🔑
-│   │       └── Cashier/ 💰 - Cashier requests (NEW - Optional)
+│   │       └── Cashier/ 💰 - Cashier requests
 │   │           └── AddToCartRequest.php 📝 - Add to cart validation
 │   │
 │   ├── Models/ 🗂️ - Eloquent models
@@ -48,7 +48,7 @@ pos-ai-powerered/ 📁 - Project root
 │   ├── Providers/ 🔧 - Service providers
 │   │   └── AppServiceProvider.php 🔧 - App provider
 │   │
-│   ├── Services/ 🔧 - Service layer (NEW)
+│   ├── Services/ 🔧 - Service layer
 │   │   └── Cashier/ 💰 - Cashier services
 │   │       └── ProductService.php 🔧 - Product business logic
 │   │
@@ -93,7 +93,8 @@ pos-ai-powerered/ 📁 - Project root
 │   │       └── dashboard.css 🎨 - Cashier dashboard CSS
 │   ├── js/ 📜
 │   │   └── cashier/ 💰
-│   │       └── dashboard.js 📜 - Cashier dashboard JS
+│   │       ├── dashboard.js 📜 - Cashier dashboard JS
+│   │       └── product-manager.js.backup 📜 - Backup of product manager
 │   ├── .htaccess 🔒
 │   ├── favicon.ico 🌟
 │   ├── index.php 🚀
@@ -102,14 +103,14 @@ pos-ai-powerered/ 📁 - Project root
 ├── resources/ 📂 - Resources
 │   ├── css/ 🎨 - Stylesheets
 │   │   ├── app.css 🎨 - App CSS
-│   │   └── cashier/ 💰 - Cashier styles (NEW - Optional)
-│   │       └── product-modal.css 🎨 - Modal styling
+│   │   └── cashier/ 💰 - Cashier styles
+│   │       └── product-modal.css 🎨 - Modal styling (UPDATED)
 │   │
 │   ├── js/ 📜 - JavaScript
 │   │   ├── app.js 📜 - App JS
 │   │   ├── bootstrap.js 🚀 - Bootstrap JS
-│   │   └── cashier/ 💰 - Cashier modules (NEW)
-│   │       └── product-manager.js 📜 - Product selection & modal logic
+│   │   └── cashier/ 💰 - Cashier modules
+│   │       └── product-manager.js 📜 - Product selection & modal logic (UPDATED)
 │   │
 │   └── views/ 👁️ - Blade templates
 │       ├── temp-logout.blade.php 👋
@@ -118,9 +119,10 @@ pos-ai-powerered/ 📁 - Project root
 │       ├── welcome.blade.php 👋
 │       │
 │       ├── cashier/ 💰 - Cashier POV
-│       │   ├── dashboard-cdn.blade.php 📄 - Main dashboard
-│       │   └── partials/ 🧩 - Cashier partials (NEW)
-│       │       └── _product-modal.blade.php 📄 - Modal popup content
+│       │   ├── dashboard-cdn.blade.php 📄 - Main dashboard (UPDATED)
+│       │   └── partials/ 🧩 - Cashier partials
+│       │       ├── _add-product-modal.blade.php 📄 - Add product modal (NEW)
+│       │       └── _product-modal.blade.php 📄 - Legacy modal (backup/symlink)
 │       │
 │       ├── auth/ 🔐 - Auth views
 │       │   ├── confirm-password.blade.php 🔒
@@ -139,19 +141,19 @@ pos-ai-powerered/ 📁 - Project root
 │       │   ├── dropdown.blade.php 📋
 │       │   ├── input-error.blade.php ❌
 │       │   ├── input-label.blade.php 🏷️
-│       │   ├── modal.blade.php 📱
+│       │   ├── modal.blade.php 📱 - Modal component (USED)
 │       │   ├── nav-link.blade.php 🔗
 │       │   ├── primary-button.blade.php ✅
 │       │   ├── responsive-nav-link.blade.php 📱
 │       │   ├── text-input.blade.php 📝
-│       │   └── cashier/ 💰 - Cashier components (NEW - Optional)
+│       │   └── cashier/ 💰 - Cashier components
 │       │       └── product-card.blade.php 🧩 - Product card component
 │       │
 │       ├── layouts/ 📐 - Layouts
 │       │   ├── app.blade.php 📐
 │       │   ├── guest-layout.blade.php 👤
 │       │   ├── guest.blade.php 👤
-│       │   └── navigation.blade.php 🧭
+│       │   └── navigation.blade.php 🧭 - Navigation layout
 │       │
 │       └── profile/ 👤 - Profile views
 │           ├── edit.blade.php ✏️
@@ -164,7 +166,7 @@ pos-ai-powerered/ 📁 - Project root
 │   ├── auth.php 🔐 - Auth routes
 │   ├── console.php 💻 - Console routes
 │   ├── web.php 🌐 - Web routes
-│   └── cashier.php 🛤️ - Cashier routes (NEW)
+│   └── cashier.php 🛤️ - Cashier routes
 │
 ├── storage/ 💾 - Storage
 │   ├── app/ 📂

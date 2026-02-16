@@ -1,3 +1,81 @@
-[x-cloak] {
-    display: none !important;
+/* Add Product Modal Styles - Clean Version */
+
+/* Remove spinner from number inputs */
+input[type=number]::-webkit-outer-spin-button,
+input[type=number]::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+input[type=number] {
+    -moz-appearance: textfield;
+    appearance: textfield;
+}
+
+/* Input focus styles */
+input:focus, select:focus {
+    border-color: #FFC5D9 !important;
+    box-shadow: 0 0 0 1px rgba(255, 197, 217, 0.3) !important;
+}
+
+/* Input default state - always visible border */
+input, select {
+    border: 1px solid #e5e7eb;
+    transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+}
+
+/* Image selection hover effect */
+.existing-image-option {
+    transition: all 0.15s ease-in-out;
+}
+
+.existing-image-option:hover {
+    border-color: #d1d5db;
+}
+
+.existing-image-option.selected {
+    border-color: #FFC5D9;
+    box-shadow: 0 0 0 1px #FFC5D9;
+}
+
+/* Error state */
+input.border-red-500, select.border-red-500 {
+    border-color: #FF0004;
+}
+
+input.border-red-500:focus, select.border-red-500:focus {
+    border-color: #FF0004;
+    box-shadow: 0 0 0 1px rgba(255, 0, 4, 0.2);
+}
+
+/* Success state */
+.bg-\[\#FF0059\] {
+    background-color: #FF0059;
+}
+
+.bg-\[\#FF0059\]:hover {
+    background-color: #E0004D;
+}
+
+/* Custom select arrow positioning */
+select {
+    background-position: right 0.5rem center;
+    background-repeat: no-repeat;
+    background-size: 1.5em 1.5em;
+    padding-right: 2rem;
+}
+
+/* Modal content spacing */
+[x-cloak] { 
+    display: none !important; 
+}
+
+/* Animation for modal */
+[x-show="show"] {
+    transition: opacity 0.2s ease-out;
+}
+
+/* Form field transitions */
+input, select, button {
+    transition: all 0.15s ease-in-out;
 }
