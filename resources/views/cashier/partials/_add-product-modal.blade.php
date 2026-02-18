@@ -157,12 +157,15 @@
                     this.submitSuccess = true;
                     this.showNotification('Product added successfully!', 'success');
                     
+                    // Get the created product from response
+                    const createdProduct = data.product;
+                    
                     // Reset form and close modal after delay
                     setTimeout(() => {
                         this.resetForm();
                         $dispatch('close-modal', 'add-product-modal');
                         
-                        // Trigger product list refresh if needed
+                        // Trigger product list refresh
                         if (window.productManager) {
                             window.productManager.refreshProducts();
                         }

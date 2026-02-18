@@ -16,7 +16,8 @@ class ProductSeeder extends Seeder
                 'stock' => 15,
                 'price' => 180.00,
                 'description' => 'Traditional sourdough with crispy crust',
-                'image_path' => null
+                'image_path' => null,
+                'is_active' => true
             ],
             [
                 'name' => 'Chocolate Cake',
@@ -24,7 +25,8 @@ class ProductSeeder extends Seeder
                 'stock' => 8,
                 'price' => 250.00,
                 'description' => 'Rich chocolate layered cake',
-                'image_path' => null
+                'image_path' => null,
+                'is_active' => true
             ],
             [
                 'name' => 'Caramel Latte',
@@ -32,7 +34,8 @@ class ProductSeeder extends Seeder
                 'stock' => 25,
                 'price' => 150.00,
                 'description' => 'Espresso with caramel and steamed milk',
-                'image_path' => null
+                'image_path' => null,
+                'is_active' => true
             ],
             [
                 'name' => 'Croissant',
@@ -40,7 +43,8 @@ class ProductSeeder extends Seeder
                 'stock' => 12,
                 'price' => 95.00,
                 'description' => 'Buttery flaky pastry',
-                'image_path' => null
+                'image_path' => null,
+                'is_active' => true
             ],
             [
                 'name' => 'Cheesecake',
@@ -48,7 +52,8 @@ class ProductSeeder extends Seeder
                 'stock' => 5,
                 'price' => 220.00,
                 'description' => 'Creamy New York style',
-                'image_path' => null
+                'image_path' => null,
+                'is_active' => true
             ],
             [
                 'name' => 'Matcha Tea',
@@ -56,7 +61,8 @@ class ProductSeeder extends Seeder
                 'stock' => 30,
                 'price' => 130.00,
                 'description' => 'Japanese green tea',
-                'image_path' => null
+                'image_path' => null,
+                'is_active' => true
             ]
         ];
 

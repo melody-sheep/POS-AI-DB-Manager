@@ -2,6 +2,8 @@
 
 // Navigation functionality
 document.addEventListener('DOMContentLoaded', function() {
+    console.log('Dashboard JS: DOMContentLoaded fired');
+    
     // Get all tab items
     const tabItems = document.querySelectorAll('.tab-item');
     const indicator = document.querySelector('.moving-indicator');
@@ -19,6 +21,8 @@ document.addEventListener('DOMContentLoaded', function() {
     });
     
     function setActiveTab(tabId, initial = false) {
+        console.log('Setting active tab:', tabId);
+        
         // Remove active class from all tabs
         tabItems.forEach(tab => {
             tab.classList.remove('active');
@@ -32,11 +36,27 @@ document.addEventListener('DOMContentLoaded', function() {
             // Move the indicator with QUICK animation
             moveIndicator(activeTab, initial);
             
+            // Update active tab display
+            const activeTabNameEl = document.getElementById('active-tab-name');
+            if (activeTabNameEl) {
+                const tabName = activeTab.querySelector('.tab-text')?.textContent || getTabName(tabId);
+                activeTabNameEl.textContent = tabName;
+            }
+            
             // Dispatch custom event for other components to listen to
             const event = new CustomEvent('tabChanged', { 
                 detail: { tabId: tabId, tabName: getTabName(tabId) }
             });
             window.dispatchEvent(event);
+            
+            // Refresh products if ProductManager exists
+            if (window.productManager) {
+                console.log('Dashboard: ProductManager found, refreshing products for', tabId);
+                window.productManager.currentCategory = tabId;
+                window.productManager.refreshProducts();
+            } else {
+                console.log('Dashboard: ProductManager not found yet');
+            }
         }
     }
     

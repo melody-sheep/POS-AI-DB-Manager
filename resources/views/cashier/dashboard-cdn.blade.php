@@ -87,6 +87,7 @@
             padding: 2rem;
             text-align: center;
             width: 100%;
+            flex: 1;
         }
 
         .selection-icon {
@@ -479,35 +480,9 @@
             <!-- PRODUCT SELECTION COLUMN -->
             <div class="column column-products">
                 <div class="column-content">
-                    <!-- Product Selection Section -->
-                    <div class="product-selection-section">
-                        <!-- Icon -->
-                        <div class="selection-icon">
-                            <svg class="w-16 h-16 mx-auto text-custom-gray" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
-                            </svg>
-                        </div>
-                        
-                        <!-- Text (Title) -->
-                        <h3 class="selection-title">
-                            Product Selection
-                        </h3>
-                        
-                        <!-- Sub text -->
-                        <p class="selection-subtext">
-                            Click the button below to add new products to your inventory
-                        </p>
-                        
-                        <!-- Add Product Button -->
-                        <button 
-                            @click="$dispatch('open-modal', 'add-product-modal')"
-                            class="add-product-btn"
-                        >
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-                            </svg>
-                            <span>Add Product</span>
-                        </button>
+                    <!-- Products Grid Container -->
+                    <div id="productsGrid" class="products-grid">
+                        <!-- Products will be loaded here dynamically -->
                     </div>
                 </div>
             </div>
@@ -546,11 +521,52 @@
 
     <!-- Product Manager JS - Load this AFTER dashboard.js -->
     <script src="{{ asset('js/cashier/product-manager.js') }}"></script>
+
+    <!-- Debug Overlay -->
+    <div id="debug-overlay" style="position: fixed; bottom: 20px; left: 20px; background: rgba(0,0,0,0.9); color: #0f0; padding: 15px; border-radius: 8px; font-family: monospace; font-size: 12px; max-width: 350px; max-height: 250px; overflow-y: auto; z-index: 9999; display: block; border: 2px solid #0f0;">
+        <div style="color: #ff6b6b; font-weight: bold; margin-bottom: 10px;">⚙️ DEBUG CONSOLE</div>
+        <div id="debug-messages"></div>
+    </div>
+
     <script>
-        // Simple initialization - no product loading
-        document.addEventListener('DOMContentLoaded', function() {
-            console.log('Dashboard ready');
-            // Don't try to initialize ProductManager here since it's now simplified
+        // Debug overlay functionality
+        const debugOverlay = document.getElementById('debug-overlay');
+        const debugMessages = document.getElementById('debug-messages');
+        const originalLog = console.log;
+        const originalError = console.error;
+        
+        let messageCount = 0;
+        
+        function addDebugMessage(msg, type = 'log') {
+            if (messageCount > 20) {
+                debugMessages.innerHTML = '<div style="color: #999;">--- cleared ---</div>';
+                messageCount = 0;
+            }
+            const color = type === 'error' ? '#ff6b6b' : type === 'warn' ? '#ffd93d' : '#0f0';
+            const msgEl = document.createElement('div');
+            msgEl.style.color = color;
+            msgEl.textContent = msg;
+            debugMessages.appendChild(msgEl);
+            debugOverlay.style.display = 'block';
+            messageCount++;
+        }
+        
+        console.log = function(...args) {
+            originalLog(...args);
+            addDebugMessage(args.map(a => typeof a === 'object' ? JSON.stringify(a) : String(a)).join(' '), 'log');
+        };
+        
+        console.error = function(...args) {
+            originalError(...args);
+            addDebugMessage(args.map(a => typeof a === 'object' ? JSON.stringify(a) : String(a)).join(' '), 'error');
+        };
+        
+        // Toggle debug overlay with Ctrl+Shift+D
+        document.addEventListener('keydown', (e) => {
+            if (e.ctrlKey && e.shiftKey && e.key === 'D') {
+                e.preventDefault();
+                debugOverlay.style.display = debugOverlay.style.display === 'none' ? 'block' : 'none';
+            }
         });
     </script>
 

@@ -2,6 +2,8 @@ pos-ai-powerered/ 📁 - Project root
 ├── .editorconfig ⚙️ - Editor config
 ├── .gitattributes 📝 - Git attributes
 ├── .gitignore 🚫 - Git ignore rules
+├── .env 🔑 - Environment variables (local)
+├── .env.example 🔑 - Environment variables example
 ├── artisan 🛠️ - Laravel CLI
 ├── composer.json 📦 - PHP dependencies
 ├── composer.lock 🔒 - Composer lock
@@ -80,6 +82,7 @@ pos-ai-powerered/ 📁 - Project root
 │
 ├── database/ 🗄️ - Database files
 │   ├── .gitignore 🚫
+│   ├── database.sqlite 🗄️ - SQLite database file
 │   ├── factories/ 🏭
 │   │   └── UserFactory.php 👤
 │   ├── migrations/ 🔄
@@ -131,7 +134,6 @@ pos-ai-powerered/ 📁 - Project root
 │       │   ├── components/ 🧩 - Cashier components (empty)
 │       │   └── partials/ 🧩 - Cashier partials
 │       │       ├── _add-product-modal.blade.php 📄 - Add product modal
-│       │       ├── _product-modal.blade.php 📄 - Legacy modal
 │       │       └── _image-gallery-modal.blade.php 🖼️ - Image gallery modal
 │       │
 │       ├── auth/ 🔐 - Auth views

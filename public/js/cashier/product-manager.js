@@ -1,194 +1,346 @@
-    // Product Manager - Self Contained Version
+// Product Manager - With Add Product Modal functionality
 class ProductManager {
-    constructor() {
-        console.log('Product Manager initializing...');
-        this.currentCategory = 'breads';
-        this.cart = [];
+    constructor(config = {}) {
+        console.log('Product Manager initialized');
+        
+        this.config = {
+            gridSelector: '#productsGrid',
+            products: [],
+            currentCategory: 'breads',
+            onProductSelect: null,
+            ...config
+        };
 
-        // Initialize immediately since DOM is ready
+        this.products = this.config.products;
+        this.currentCategory = this.config.currentCategory;
+        
         this.init();
     }
 
     init() {
-        console.log('Product Manager initialized');
-        this.loadProducts(this.currentCategory);
-        this.setupTabListeners();
+        this.initModalTriggers();
+        this.setupEventListeners();
+        this.refreshProducts(); // Load products on initialization
     }
 
-    setupTabListeners() {
-        const tabItems = document.querySelectorAll('.tab-item');
-        console.log('Found tabs:', tabItems.length);
-        
-        tabItems.forEach(tab => {
-            tab.removeEventListener('click', this.handleTabClick);
-            tab.addEventListener('click', (e) => this.handleTabClick(e, tab));
+    initModalTriggers() {
+        // Listen for Add Product button clicks
+        document.addEventListener('click', (e) => {
+            if (e.target.closest('.add-product-btn') || e.target.closest('[data-add-product]')) {
+                this.openAddProductModal();
+            }
         });
-    }
 
-    handleTabClick(e, tab) {
-        const tabName = tab.dataset.tab;
-        console.log('Tab clicked:', tabName);
-        
-        if (['breads', 'cakes', 'beverages'].includes(tabName)) {
-            this.currentCategory = tabName;
-            this.loadProducts(tabName);
+        // Listen for form submission
+        const form = document.getElementById('addProductForm');
+        if (form) {
+            form.addEventListener('submit', (e) => {
+                e.preventDefault();
+                // Form is handled by Alpine, so we don't need to do anything here
+            });
         }
     }
 
-    async loadProducts(category) {
-        console.log('Loading products for:', category);
+    setupEventListeners() {
+        // Listen for products updated event
+        window.addEventListener('products-updated', (event) => {
+            console.log('Products updated event received:', event.detail);
+            if (event.detail.category === this.currentCategory) {
+                this.products = event.detail.products || [];
+                this.renderProductGrid();
+            }
+        });
+
+        // Listen for product added event
+        window.addEventListener('product-added', (event) => {
+            console.log('Product added event received:', event.detail);
+            if (event.detail.category === this.currentCategory) {
+                // Refresh products for current category
+                this.refreshProducts();
+            }
+        });
+
+        // Listen for tab changes to refresh products for that category
+        window.addEventListener('tabChanged', (event) => {
+            const tabId = event.detail.tabId;
+            console.log('Tab changed to:', tabId);
+            
+            // Only refresh if it's a product category tab
+            if (['breads', 'cakes', 'beverages'].includes(tabId)) {
+                this.currentCategory = tabId;
+                this.refreshProducts();
+            }
+        });
+    }
+
+    openAddProductModal() {
+        console.log('Opening add product modal');
+        
+        // Dispatch Alpine event to open modal
+        window.dispatchEvent(new CustomEvent('open-modal', { 
+            detail: 'add-product-modal' 
+        }));
+        
+        // Also try Alpine data method as fallback
+        const alpineRoot = document.querySelector('[x-data]');
+        if (alpineRoot && alpineRoot.__x) {
+            const cashierData = alpineRoot.__x.$data;
+            if (cashierData.$refs && cashierData.$refs.modal) {
+                cashierData.showProductModal = true;
+            }
+        }
+    }
+
+    switchCategory(category) {
+        console.log('Switching to category:', category);
+        this.currentCategory = category;
+        this.refreshProducts();
+    }
+
+    async refreshProducts() {
+        console.log('Refreshing products for category:', this.currentCategory);
         
         try {
-            // Use absolute URL
-            const response = await fetch(`/cashier/products?category=${category}`);
+            const url = `/cashier/products?category=${this.currentCategory}`;
+            console.log('Fetching from:', url);
+            
+            const response = await fetch(url, {
+                headers: {
+                    'Accept': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            });
+            
+            console.log('Response status:', response.status);
             
             if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
+                throw new Error(`Failed to fetch products: ${response.status} ${response.statusText}`);
             }
             
             const data = await response.json();
-            console.log('Products loaded:', data);
-            this.renderProducts(data.products);
-        } catch (error) {
-            console.error('Error loading products:', error);
+            console.log('API Response:', data);
             
-            // Show error in product column
-            const productColumn = document.querySelector('.column-products .column-content');
-            if (productColumn) {
-                productColumn.innerHTML = `
-                    <div class="placeholder-content">
-                        <div class="placeholder-icon text-red-500">
-                            <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                            </svg>
-                        </div>
-                        <h3 class="placeholder-title text-red-600">Error Loading Products</h3>
-                        <p class="placeholder-text">Please check console for details</p>
-                    </div>
-                `;
-            }
+            // Update products and render
+            this.products = data.products || [];
+            console.log('Products updated:', this.products.length, 'items');
+            
+            this.renderProductGrid();
+            
+        } catch (error) {
+            console.error('Error refreshing products:', error);
+            this.showNotification('Failed to refresh products: ' + error.message, 'error');
         }
     }
 
-    renderProducts(products) {
-        const productColumn = document.querySelector('.column-products .column-content');
-        if (!productColumn) {
-            console.error('Product column not found');
+    renderProductGrid() {
+        const grid = document.querySelector(this.config.gridSelector);
+        if (!grid) {
+            console.error('Products grid not found:', this.config.gridSelector);
             return;
         }
 
-        if (!products || products.length === 0) {
-            productColumn.innerHTML = `
-                <div class="placeholder-content">
-                    <div class="placeholder-icon">
-                        <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/>
+        console.log('Rendering grid with', this.products.length, 'products');
+
+        let html = '';
+
+        // If no products, show empty state with add button frame only
+        if (!this.products || this.products.length === 0) {
+            console.log('No products, showing empty state');
+            html = this.renderEmptyState();
+        } else {
+            // Add product cards for each product
+            this.products.forEach(product => {
+                html += this.renderProductCard(product);
+            });
+            
+            // Always add the "Add Product" frame at the end
+            html += this.renderAddProductFrame();
+        }
+
+        grid.innerHTML = html;
+        console.log('Grid rendered successfully');
+    }
+
+    renderProductCard(product) {
+        const imageUrl = product.image_path 
+            ? `/storage/${product.image_path}`
+            : null;
+
+        return `
+            <div class="product-card bg-white rounded-xl shadow-sm hover:shadow-md transition-all duration-300 border border-gray-100 hover:border-pink-border overflow-hidden group">
+                <!-- Product Image -->
+                <div class="relative h-32 bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center p-3">
+                    ${imageUrl 
+                        ? `<img src="${imageUrl}" 
+                             alt="${product.name}"
+                             class="max-w-full max-h-full object-contain group-hover:scale-105 transition-transform duration-300">`
+                        : `<div class="w-16 h-16 bg-pink-50 rounded-full flex items-center justify-center">
+                                <svg class="w-8 h-8 text-pink-border" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                </svg>
+                            </div>`
+                    }
+
+                    <!-- Stock Badge -->
+                    ${product.stock < 1 
+                        ? '<span class="absolute top-2 right-2 bg-red-100 text-red-600 text-xs font-medium px-2 py-1 rounded-full">Out of Stock</span>'
+                        : product.stock < 6 
+                            ? '<span class="absolute top-2 right-2 bg-yellow-100 text-yellow-600 text-xs font-medium px-2 py-1 rounded-full">Low Stock</span>'
+                            : ''
+                    }
+                </div>
+
+                <!-- Product Info -->
+                <div class="p-3">
+                    <h3 class="font-semibold text-gray-800 text-sm mb-1 line-clamp-1" title="${product.name}">
+                        ${product.name}
+                    </h3>
+                    
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="text-sm font-bold text-pink-border">₱${parseFloat(product.price).toFixed(2)}</span>
+                        <span class="text-xs text-gray-500">Stock: ${product.stock}</span>
+                    </div>
+
+                    <!-- Add to Order Button -->
+                    <button 
+                        onclick="addToOrder(${product.id})"
+                        class="w-full bg-gradient-to-r from-pink-border to-pink-400 text-white text-xs font-medium py-2 rounded-lg hover:opacity-90 transition-opacity flex items-center justify-center gap-1"
+                        ${product.stock < 1 ? 'disabled' : ''}
+                    >
+                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                        </svg>
+                        <span>Add to Order</span>
+                    </button>
+                </div>
+            </div>
+        `;
+    }
+
+    renderEmptyState() {
+        return `
+            <div class="product-selection-section">
+                <!-- Icon -->
+                <div class="selection-icon">
+                    <svg class="w-16 h-16 mx-auto text-custom-gray" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+                    </svg>
+                </div>
+                
+                <!-- Text (Title) -->
+                <h3 class="selection-title">
+                    Product Selection
+                </h3>
+                
+                <!-- Sub text -->
+                <p class="selection-subtext">
+                    Click the button below to add new products to your inventory
+                </p>
+                
+                <!-- Add Product Button -->
+                <button 
+                    class="add-product-btn"
+                    onclick="window.productManager?.openAddProductModal()"
+                >
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                    </svg>
+                    <span>Add Product</span>
+                </button>
+            </div>
+        `;
+    }
+
+    renderAddProductFrame() {
+        return `
+            <div class="add-product-frame group cursor-pointer" onclick="window.productManager?.openAddProductModal()" data-add-product>
+                <div class="add-product-frame-content">
+                    <!-- Plus Icon with Circle Background -->
+                    <div class="w-16 h-16 bg-pink-50 rounded-full flex items-center justify-center mb-3 group-hover:bg-pink-100 transition-colors duration-300 mx-auto">
+                        <svg class="w-8 h-8 text-pink-border group-hover:scale-110 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4" />
                         </svg>
                     </div>
-                    <h3 class="placeholder-title">No Products Available</h3>
-                    <p class="placeholder-text">No items found in this category.</p>
+                    
+                    <!-- Add Product Text -->
+                    <span class="text-sm font-medium text-gray-700 group-hover:text-pink-border transition-colors duration-300">
+                        Add New Product
+                    </span>
+                    <span class="text-xs text-gray-400 mt-1 text-center block">
+                        Click to add<br>new item
+                    </span>
                 </div>
-            `;
-            return;
+            </div>
+        `;
+    }
+
+    addProductToList(product) {
+        console.log('Adding product to list:', product);
+        
+        // Add to products array if it matches current category
+        if (product.category === this.currentCategory) {
+            this.products.push(product);
+            this.renderProductGrid();
         }
-
-        let html = '<div class="grid grid-cols-1 md:grid-cols-2 gap-4 w-full">';
         
-        products.forEach(product => {
-            html += `
-                <div class="product-card bg-white rounded-xl p-4 border border-gray-100 hover:border-pink-border transition-all duration-300 hover:shadow-lg cursor-pointer group" data-product-id="${product.id}">
-                    <div class="flex items-start space-x-4">
-                        <div class="w-16 h-16 bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl flex items-center justify-center text-3xl group-hover:scale-110 transition-transform">
-                            ${product.image || '🛒'}
-                        </div>
-                        <div class="flex-1">
-                            <div class="flex items-start justify-between">
-                                <div>
-                                    <h4 class="font-semibold text-gray-900">${product.name}</h4>
-                                    <p class="text-sm text-gray-500 mt-0.5">${product.description.substring(0, 30)}...</p>
-                                </div>
-                                <span class="text-lg font-bold text-custom-gray">₱${product.price.toFixed(2)}</span>
-                            </div>
-                            <button class="add-to-cart-btn mt-3 text-xs bg-gradient-to-r from-pink-border to-[#FFB0C8] text-white px-3 py-1.5 rounded-lg hover:opacity-90 transition-opacity flex items-center space-x-1">
-                                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
-                                </svg>
-                                <span>Add to Cart</span>
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            `;
-        });
-        
-        html += '</div>';
-        productColumn.innerHTML = html;
-        
-        // Add event listeners to product cards
-        this.attachProductEvents();
+        this.showNotification('Product added successfully!', 'success');
     }
 
-    attachProductEvents() {
-        // Product card click
-        document.querySelectorAll('.product-card').forEach(card => {
-            card.addEventListener('click', (e) => {
-                // Don't trigger if clicking the button
-                if (e.target.closest('.add-to-cart-btn')) return;
-                
-                const productId = card.dataset.productId;
-                this.fetchAndShowProduct(productId);
-            });
-        });
-        
-        // Add to cart buttons
-        document.querySelectorAll('.add-to-cart-btn').forEach(btn => {
-            btn.addEventListener('click', (e) => {
-                e.stopPropagation();
-                const card = e.target.closest('.product-card');
-                const productId = card.dataset.productId;
-                this.fetchAndShowProduct(productId);
-            });
-        });
-    }
-
-    async fetchAndShowProduct(productId) {
-        try {
-            const response = await fetch(`/cashier/products/${productId}`);
-            const product = await response.json();
-            this.showProductModal(product);
-        } catch (error) {
-            console.error('Error fetching product:', error);
-        }
-    }
-
-    showProductModal(product) {
-        // Find Alpine component
+    showNotification(message, type = 'success') {
+        // Try to use Alpine's notification system
         const alpineRoot = document.querySelector('[x-data]');
         if (alpineRoot && alpineRoot.__x) {
-            alpineRoot.__x.$data.selectedProduct = product;
-            alpineRoot.__x.$data.quantity = 1;
-            alpineRoot.__x.$data.showProductModal = true;
-        } else {
-            console.error('Alpine component not found');
-        }
-    }
-
-    addToCart(product, quantity = 1) {
-        const existingItem = this.cart.find(item => item.id === product.id);
-        
-        if (existingItem) {
-            existingItem.quantity += quantity;
-        } else {
-            this.cart.push({
-                ...product,
-                quantity: quantity
-            });
+            const cashierData = alpineRoot.__x.$data;
+            if (cashierData.notifications) {
+                const newNotification = {
+                    id: Date.now(),
+                    type: type,
+                    title: type === 'success' ? 'Success' : 'Info',
+                    message: message,
+                    time: 'Just now',
+                    read: false
+                };
+                cashierData.notifications.unshift(newNotification);
+                if (cashierData.unreadCount !== undefined) {
+                    cashierData.unreadCount = (cashierData.unreadCount || 0) + 1;
+                }
+                return;
+            }
         }
         
-        console.log('Cart updated:', this.cart);
-        alert(`Added ${quantity} x ${product.name} to cart!`);
+        // Fallback to alert
+        alert(message);
     }
 }
 
 // Make it globally available
 window.ProductManager = ProductManager;
+window.addToOrder = window.addToOrder || function(productId) {
+    console.log('Adding product to order:', productId);
+    // Implement your add to order logic here
+};
+
+// Auto-initialize when DOM is ready (with fallback for late script loading)
+function initializeProductManager() {
+    console.log('Initializing Product Manager');
+    
+    // Check if already initialized
+    if (!window.productManager) {
+        window.productManager = new ProductManager({
+            gridSelector: '#productsGrid',
+            products: [],
+            currentCategory: 'breads'
+        });
+        console.log('ProductManager instance created:', window.productManager);
+    }
+}
+
+// Try to initialize immediately if DOM is already loaded
+if (document.readyState === 'loading') {
+    // DOM is still loading, wait for DOMContentLoaded 
+    document.addEventListener('DOMContentLoaded', initializeProductManager);
+} else {
+    // DOM is already loaded, initialize immediately
+    console.log('DOM already loaded, initializing immediately');
+    initializeProductManager();
+}

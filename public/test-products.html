@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Product Grid Test - Minimal</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: Arial, sans-serif; background: #f5f5f5; padding: 20px; }
+        .container { max-width: 1200px; margin: 0 auto; }
+        .status-box { background: white; padding: 20px; margin: 20px 0; border-radius: 8px; border-left: 4px solid #ff0000; }
+        .status-box.success { border-left-color: #00aa00; }
+        .status-box.warning { border-left-color: #ffaa00; }
+        h2 { color: #333; margin-bottom: 10px; }
+        .grid-container { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 15px; margin: 20px 0; }
+        .product-card { background: white; padding: 15px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+        .product-card h3 { color: #333; margin-bottom: 8px; font-size: 16px; }
+        .product-card .price { color: #ff6b9d; font-weight: bold; font-size: 16px; }
+        .product-card .stock { color: #666; font-size: 14px; }
+        pre { background: #1e1e1e; color: #0f0; padding: 15px; border-radius: 4px; overflow-x: auto; font-size: 12px; }
+        .console { max-height: 300px; overflow-y: auto; }
+        button { background: #ff6b9d; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer; margin: 5px 5px 5px 0; }
+        button:hover { background: #ff0059; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>✓ Product Grid Minimal Test</h1>
+        
+        <div class="status-box warning" id="statusBox">
+            <h2>Status: Loading...</h2>
+            <p id="statusText">Initializing product fetch...</p>
+        </div>
+        
+        <div class="status-box">
+            <h2>Actions</h2>
+            <button onclick="testAPI()">Test API Endpoint</button>
+            <button onclick="loadProducts()">Fetch Products Now</button>
+            <button onclick="clearConsole()">Clear Console</button>
+        </div>
+        
+        <div class="status-box">
+            <h2>Products Grid</h2>
+            <div class="grid-container" id="productsGrid">
+                <!-- Products will load here -->
+            </div>
+        </div>
+        
+        <div class="status-box">
+            <h2>Console Output</h2>
+            <pre class="console" id="consoleOutput"></pre>
+        </div>
+    </div>
+
+    <script>
+        // Console capture
+        const consoleOutput = document.getElementById('consoleOutput');
+        const statusText = document.getElementById('statusText');
+        const statusBox = document.getElementById('statusBox');
+        const originalLog = console.log;
+        const originalError = console.error;
+        
+        function log(msg, type = 'log') {
+            const timestamp = new Date().toLocaleTimeString();
+            const prefix = type === 'error' ? '❌' : type === 'warn' ? '⚠️'  : '✓';
+            const fullMsg = `[${timestamp}] ${prefix} ${msg}`;
+            consoleOutput.textContent += fullMsg + '\n';
+            consoleOutput.scrollTop = consoleOutput.scrollHeight;
+            if (type === 'error') originalError(msg);
+            else originalLog(msg);
+        }
+        
+        console.log = function(...args) {
+            log(args.map(a => typeof a === 'object' ? JSON.stringify(a, null, 2) : String(a)).join(' '));
+        };
+        console.error = function(...args) {
+            log(args.map(a => typeof a === 'object' ? JSON.stringify(a) : String(a)).join(' '), 'error');
+        };
+        
+        function clearConsole() {
+            consoleOutput.textContent = '';
+            log('Console cleared');
+        }
+        
+        async function testAPI() {
+            log('Testing API endpoint...');
+            try {
+                const response = await fetch('/cashier/products?category=breads');
+                log(`API Response Status: ${response.status}`);
+                
+                const data = await response.json();
+                log(`Products received: ${data.products?.length || 0}`);
+                if (data.products) {
+                    data.products.forEach(p => {
+                        log(`  - ${p.name} ($${p.price}) - Stock: ${p.stock}`);
+                    });
+                }
+            } catch (error) {
+                log(`API Error: ${error.message}`, 'error');
+            }
+        }
+        
+        async function loadProducts() {
+            log('Fetching products...');
+            const grid = document.getElementById('productsGrid');
+            
+            try {
+                const response = await fetch('/cashier/products?category=breads');
+                if (!response.ok) throw new Error(`Status ${response.status}`);
+                
+                const data = await response.json();
+                log(`Fetched ${data.products?.length || 0} products`);
+                
+                if (!data.products || data.products.length === 0) {
+                    grid.innerHTML = '<span style="grid-column: 1/-1; text-align: center; color: #999;">No products found</span>';
+                    return;
+                }
+                
+                let html = '';
+                data.products.forEach(product => {
+                    html += `
+                        <div class="product-card">
+                            <h3>${product.name}</h3>
+                            <div class="price">₱${parseFloat(product.price).toFixed(2)}</div>
+                            <div class="stock">Stock: ${product.stock}</div>
+                            <div style="margin-top: 10px; font-size: 12px; color: #999;">
+                                ID: ${product.id}<br>
+                                ${product.is_active ? '✓ Active' : '✗ Inactive'}
+                            </div>
+                        </div>
+                    `;
+                });
+                
+                grid.innerHTML = html;
+                log('Grid rendered successfully');
+                
+                statusBox.className = 'status-box success';
+                statusText.textContent = `✓ Success! Loaded ${data.products.length} products`;
+            } catch (error) {
+                log(`Load Error: ${error.message}`, 'error');
+                statusBox.className = 'status-box';
+                statusText.textContent = `✗ Failed to load products: ${error.message}`;
+            }
+        }
+        
+        // Auto-load on page load
+        window.addEventListener('load', () => {
+            log('Page loaded, auto-loading products...');
+            loadProducts();
+        });
+    </script>
+</body>
+</html>

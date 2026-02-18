@@ -51,6 +51,9 @@ class ProductController extends Controller
                 $data['image_path'] = $path;
             }
             
+            // Set product as active
+            $data['is_active'] = true;
+            
             // Create product
             $product = Product::create($data);
             
